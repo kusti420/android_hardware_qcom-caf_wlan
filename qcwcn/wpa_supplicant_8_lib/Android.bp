@@ -47,6 +47,16 @@ cc_library_static {
         "-DCONFIG_P2P",
         "-Wall",
         "-Werror",
+        // IchthysOS/AOSP-17: driver_cmd_nl80211_common.h defines the globals `drv` and
+        // `bss` at file scope (tentative definitions) and is included by every driver_cmd
+        // TU. Modern clang defaults to -fno-common, turning those into duplicate strong
+        // symbols across the object files. -fcommon restores the merge-into-one-common-
+        // symbol behaviour this legacy code was written for.
+        "-fcommon",
+        // AOSP-17 wpa_supplicant/hostapd always build with -DANDROID_LIB_STUB and thus
+        // already define wpa_driver_{set,get}_p2p_* — drop our duplicate copies to avoid a
+        // link-time "duplicate symbol" (see driver_cmd_nl80211.c).
+        "-DICHTHYS_BASE_PROVIDES_P2P_STUBS",
     ],
     srcs: [
         "driver_cmd_nl80211.c",

@@ -7918,6 +7918,15 @@ int wpa_driver_nl80211_driver_cmd(void *priv, char *cmd, char *buf,
 	return ret;
 }
 
+/*
+ * IchthysOS/AOSP-17: AOSP-17's external/wpa_supplicant_8 always builds with
+ * -DANDROID_LIB_STUB, so driver_nl80211_android.c already defines these four P2P helper
+ * symbols. Compiling them here too makes wpa_supplicant fail to link with "duplicate
+ * symbol". The base stubs are functionally equivalent (set_p2p_noa/ps just forward a
+ * P2P_SET_* driver command; losing that only disables a niche P2P power-save tweak), so
+ * skip our copies. Guard is a lib-only define set in this module's Android.bp.
+ */
+#ifndef ICHTHYS_BASE_PROVIDES_P2P_STUBS
 int wpa_driver_set_p2p_noa(void *priv, u8 count, int start, int duration)
 {
 	char buf[MAX_DRV_CMD_SIZE];
@@ -7956,3 +7965,4 @@ int wpa_driver_set_ap_wps_p2p_ie(void *priv, const struct wpabuf *beacon,
 	UNUSED(priv), UNUSED(beacon), UNUSED(proberesp), UNUSED(assocresp);
 	return 0;
 }
+#endif /* ICHTHYS_BASE_PROVIDES_P2P_STUBS */
